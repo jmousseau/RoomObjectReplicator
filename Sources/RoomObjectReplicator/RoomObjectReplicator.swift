@@ -56,9 +56,15 @@ public class RoomObjectAnchor: ARAnchor {
 
 public class RoomObjectReplicator {
 
-    private var trackedAnchors = Set<RoomObjectAnchor>()
-    private var trackedAnchorsByIdentifier = [UUID: RoomObjectAnchor]()
-    private var inflightAnchors = Set<RoomObjectAnchor>()
+    private var trackedAnchors: Set<RoomObjectAnchor>
+    private var trackedAnchorsByIdentifier: [UUID: RoomObjectAnchor]
+    private var inflightAnchors: Set<RoomObjectAnchor>
+
+    public init() {
+        trackedAnchors = Set<RoomObjectAnchor>()
+        trackedAnchorsByIdentifier = [UUID: RoomObjectAnchor]()
+        inflightAnchors = Set<RoomObjectAnchor>()
+    }
 
     public func anchor(objects: [CapturedRoom.Object], in session: RoomCaptureSession) {
         for object in objects {
