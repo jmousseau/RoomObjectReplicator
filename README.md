@@ -33,10 +33,10 @@ The `RoomObjectEntity` is a custom RealityKit entity that will anchor to `RoomOb
 
 ```swift
 func session(_ session: ARSession, didAdd anchors: [ARAnchor]) {
-    anchors.forEach({ anchor in
-        if let anchor = anchor as? RoomObjectAnchor {
-            view.scene.addAnchor(RoomObjectEntity(anchor))
-        }
-    })
+    view.scene.addRoomObjectEntities(for: anchors)
+}
+
+func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
+    view.scene.updateRoomObjectEntities(for: anchors)
 }
 ```

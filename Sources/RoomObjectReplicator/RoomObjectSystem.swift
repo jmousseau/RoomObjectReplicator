@@ -5,6 +5,7 @@
 //  Created by Jack Mousseau on 6/6/22.
 //
 
+import ARKit
 import RealityFoundation
 
 public struct RoomObjectComponent: Component {
@@ -53,6 +54,46 @@ public class RoomObjectEntity: Entity, HasAnchoring, HasModel, HasRoomObjectComp
         let model = ModelComponent(mesh: mesh, materials: [material])
         let roomObject = RoomObjectComponent(dimensions: dimensions)
         components.set([model, roomObject])
+    }
+
+    fileprivate func update(_ anchor: RoomObjectAnchor) {
+        roomObject?.dimensions = anchor.dimensions
+    }
+
+}
+
+public extension Scene {
+
+    func addRoomObjectEntities(for anchors: [ARAnchor]) {
+        addRoomObjectEntities(for: anchors.compactMap({ anchor in
+            anchor as? RoomObjectAnchor
+        }))
+    }
+
+    func updateRoomObjectEntities(for anchors: [ARAnchor]) {
+        updateRoomObjectEntities(for: anchors.compactMap({ anchor in
+            anchor as? RoomObjectAnchor
+        }))
+    }
+
+    func addRoomObjectEntities(for roomObjectAnchors: [RoomObjectAnchor]) {
+        for roomObjectAnchor in roomObjectAnchors {
+            addAnchor(RoomObjectEntity(roomObjectAnchor))
+        }
+    }
+
+    func updateRoomObjectEntities(for roomObjectAnchors: [RoomObjectAnchor]) {
+        var roomObjectAnchorsByIdentifier = [UUID: RoomObjectAnchor]()
+        for roomObjectAnchor in roomObjectAnchors {
+            roomObjectAnchorsByIdentifier[roomObjectAnchor.identifier] = roomObjectAnchor
+        }
+
+        for anchor in self.anchors {
+            guard case .anchor(let identifier) = anchor.anchoring.target else { continue }
+            guard let entity = anchor as? RoomObjectEntity else { continue }
+            guard let roomObjectAnchor = roomObjectAnchorsByIdentifier[identifier] else { continue }
+            entity.update(roomObjectAnchor)
+        }
     }
 
 }
