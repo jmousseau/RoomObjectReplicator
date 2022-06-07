@@ -57,15 +57,15 @@ public class RoomObjectEntity: Entity, HasAnchoring, HasModel, HasRoomObjectComp
 
 }
 
-class RoomObjectSystem: System {
+public class RoomObjectSystem: System {
 
-    let roomObjectAnchorQuery: EntityQuery
+    private let roomObjectAnchorQuery: EntityQuery
 
-    required init(scene: Scene) {
+    public required init(scene: Scene) {
         roomObjectAnchorQuery = EntityQuery(where: .has(RoomObjectComponent.self) && .has(ModelComponent.self))
     }
 
-    func update(context: SceneUpdateContext) {
+    public func update(context: SceneUpdateContext) {
         context.scene.performQuery(roomObjectAnchorQuery).forEach { entity in
             guard let entity = entity as? Entity & HasModel & HasRoomObjectComponent else { return }
             guard let dimensions = entity.roomObject?.dimensions else { return }
