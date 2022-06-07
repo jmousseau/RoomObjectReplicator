@@ -7,10 +7,12 @@
 
 import ARKit
 import RealityFoundation
+import RoomPlan
 
 public struct RoomObjectComponent: Component {
 
     public var dimensions: simd_float3 = .zero
+    public var category: CapturedRoom.Object.Category
 
 }
 
@@ -38,26 +40,27 @@ public class RoomObjectEntity: Entity, HasAnchoring, HasModel, HasRoomObjectComp
     }
 
     public required convenience init() {
-        self.init(dimensions: .zero)
+        self.init(dimensions: .zero, category: .unknown)
     }
 
     public convenience init(_ anchor: RoomObjectAnchor) {
-        self.init(dimensions: anchor.dimensions)
+        self.init(dimensions: anchor.dimensions, category: anchor.category)
         components.set([AnchoringComponent(anchor)])
     }
 
-    public init(dimensions: simd_float3) {
+    public init(dimensions: simd_float3, category: CapturedRoom.Object.Category) {
         super.init()
 
         let mesh = MeshResource.generateBox(size: .one, cornerRadius: .zero)
         let material = SimpleMaterial(color: .systemYellow, roughness: 0.27, isMetallic: false)
         let model = ModelComponent(mesh: mesh, materials: [material])
-        let roomObject = RoomObjectComponent(dimensions: dimensions)
+        let roomObject = RoomObjectComponent(dimensions: dimensions, category: category)
         components.set([model, roomObject])
     }
 
     fileprivate func update(_ anchor: RoomObjectAnchor) {
         roomObject?.dimensions = anchor.dimensions
+        roomObject?.category = anchor.category
     }
 
 }
@@ -109,8 +112,34 @@ public class RoomObjectSystem: System {
     public func update(context: SceneUpdateContext) {
         context.scene.performQuery(roomObjectAnchorQuery).forEach { entity in
             guard let entity = entity as? Entity & HasModel & HasRoomObjectComponent else { return }
-            guard let dimensions = entity.roomObject?.dimensions else { return }
-            entity.scale = dimensions
+            guard let roomObject = entity.roomObject else { return }
+            entity.scale = roomObject.dimensions
+            entity.model?.materials = [material(for: roomObject.category)]
+        }
+    }
+
+    private func material(for category: CapturedRoom.Object.Category) -> SimpleMaterial {
+        let roughness = MaterialScalarParameter(floatLiteral: 0.27)
+        switch category {
+        case .unknown: return SimpleMaterial(color: .white, roughness: roughness, isMetallic: false)
+        case .storage: return SimpleMaterial(color: .systemGreen, roughness: roughness, isMetallic: false)
+        case .refrigerator: return SimpleMaterial(color: .systemBlue, roughness: roughness, isMetallic: false)
+        case .stove: return SimpleMaterial(color: .systemOrange, roughness: roughness, isMetallic: false)
+        case .bed: return SimpleMaterial(color: .systemYellow, roughness: roughness, isMetallic: false)
+        case .sink:  return SimpleMaterial(color: .systemPink, roughness: roughness, isMetallic: false)
+        case .washer: return SimpleMaterial(color: .systemPurple, roughness: roughness, isMetallic: false)
+        case .toilet: return SimpleMaterial(color: .systemTeal, roughness: roughness, isMetallic: false)
+        case .bathtub: return SimpleMaterial(color: .systemIndigo, roughness: roughness, isMetallic: false)
+        case .oven: return SimpleMaterial(color: .systemBrown, roughness: roughness, isMetallic: false)
+        case .dishwasher: return SimpleMaterial(color: .systemRed, roughness: roughness, isMetallic: false)
+        case .table: return SimpleMaterial(color: .systemMint, roughness: roughness, isMetallic: false)
+        case .sofa: return SimpleMaterial(color: .systemCyan, roughness: roughness, isMetallic: false)
+        case .chair: return SimpleMaterial(color: .systemGray, roughness: roughness, isMetallic: false)
+        case .fireplace: return SimpleMaterial(color: .systemGray2, roughness: roughness, isMetallic: false)
+        case .screen: return SimpleMaterial(color: .systemGray3, roughness: roughness, isMetallic: false)
+        case .stairs: return SimpleMaterial(color: .systemGray4, roughness: roughness, isMetallic: false)
+        @unknown default:
+            fatalError()
         }
     }
 

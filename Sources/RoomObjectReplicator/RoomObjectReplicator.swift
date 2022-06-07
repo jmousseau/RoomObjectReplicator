@@ -19,6 +19,7 @@ public class RoomObjectAnchor: ARAnchor {
     }
 
     public private(set) var dimensions: simd_float3
+    public private(set) var category: CapturedRoom.Object.Category
 
     private let roomObjectIdentifier: UUID
     private var roomObjectTransform: simd_float4x4
@@ -31,6 +32,7 @@ public class RoomObjectAnchor: ARAnchor {
         roomObjectIdentifier = anchor.roomObjectIdentifier
         roomObjectTransform = anchor.roomObjectTransform
         dimensions = anchor.dimensions
+        category = anchor.category
 
         super.init(anchor: anchor)
     }
@@ -44,12 +46,14 @@ public class RoomObjectAnchor: ARAnchor {
         roomObjectIdentifier = object.identifier
         roomObjectTransform = object.transform
         dimensions = object.dimensions
+        category = object.category
         super.init(transform: object.transform)
     }
 
     fileprivate func update(_ object: CapturedRoom.Object) {
         roomObjectTransform = object.transform
         dimensions = object.dimensions
+        category = object.category
     }
 
 }
