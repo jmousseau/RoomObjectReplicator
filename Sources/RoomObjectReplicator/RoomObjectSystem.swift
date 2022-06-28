@@ -12,7 +12,7 @@ import RoomPlan
 public struct RoomObjectComponent: Component {
 
     public var dimensions: simd_float3 = .zero
-    public var category: CapturedRoom.Object.Category
+    public var category: CapturedRoom.Object.Category? = nil
 
 }
 
@@ -40,7 +40,7 @@ public class RoomObjectEntity: Entity, HasAnchoring, HasModel, HasRoomObjectComp
     }
 
     public required convenience init() {
-        self.init(dimensions: .zero, category: .unknown)
+        self.init(dimensions: .zero)
     }
 
     public convenience init(_ anchor: RoomObjectAnchor) {
@@ -48,7 +48,7 @@ public class RoomObjectEntity: Entity, HasAnchoring, HasModel, HasRoomObjectComp
         components.set([AnchoringComponent(anchor)])
     }
 
-    public init(dimensions: simd_float3, category: CapturedRoom.Object.Category) {
+    public init(dimensions: simd_float3, category: CapturedRoom.Object.Category? = nil) {
         super.init()
 
         let mesh = MeshResource.generateBox(size: .one, cornerRadius: .zero)
@@ -118,16 +118,19 @@ public class RoomObjectSystem: System {
         }
     }
 
-    private func material(for category: CapturedRoom.Object.Category) -> SimpleMaterial {
+    private func material(for category: CapturedRoom.Object.Category?) -> SimpleMaterial {
         let roughness = MaterialScalarParameter(floatLiteral: 0.27)
+        guard let category = category else {
+            return SimpleMaterial(color: .white, roughness: roughness, isMetallic: false)
+        }
+
         switch category {
-        case .unknown: return SimpleMaterial(color: .white, roughness: roughness, isMetallic: false)
         case .storage: return SimpleMaterial(color: .systemGreen, roughness: roughness, isMetallic: false)
         case .refrigerator: return SimpleMaterial(color: .systemBlue, roughness: roughness, isMetallic: false)
         case .stove: return SimpleMaterial(color: .systemOrange, roughness: roughness, isMetallic: false)
         case .bed: return SimpleMaterial(color: .systemYellow, roughness: roughness, isMetallic: false)
         case .sink:  return SimpleMaterial(color: .systemPink, roughness: roughness, isMetallic: false)
-        case .washer: return SimpleMaterial(color: .systemPurple, roughness: roughness, isMetallic: false)
+        case .washerDryer: return SimpleMaterial(color: .systemPurple, roughness: roughness, isMetallic: false)
         case .toilet: return SimpleMaterial(color: .systemTeal, roughness: roughness, isMetallic: false)
         case .bathtub: return SimpleMaterial(color: .systemIndigo, roughness: roughness, isMetallic: false)
         case .oven: return SimpleMaterial(color: .systemBrown, roughness: roughness, isMetallic: false)
@@ -136,7 +139,7 @@ public class RoomObjectSystem: System {
         case .sofa: return SimpleMaterial(color: .systemCyan, roughness: roughness, isMetallic: false)
         case .chair: return SimpleMaterial(color: .systemGray, roughness: roughness, isMetallic: false)
         case .fireplace: return SimpleMaterial(color: .systemGray2, roughness: roughness, isMetallic: false)
-        case .screen: return SimpleMaterial(color: .systemGray3, roughness: roughness, isMetallic: false)
+        case .television: return SimpleMaterial(color: .systemGray3, roughness: roughness, isMetallic: false)
         case .stairs: return SimpleMaterial(color: .systemGray4, roughness: roughness, isMetallic: false)
         @unknown default:
             fatalError()
